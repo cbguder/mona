@@ -44,26 +44,35 @@ class NAMM:
 		self.draw()
 
 	def rewind_clicked(self, widget, data=None):
+		self.fstop = True
 		self.t = 0.0
 		self.draw()
 
 	def play(self):
-		while self.t < 100:
+		while self.t < 100 and not self.fstop:
 			gtk.gdk.threads_enter()
 			self.step()
 			gtk.gdk.threads_leave()
 			time.sleep(0.005)
 		self.start.set_sensitive(True)
+		self.stop.set_sensitive(False)
 
 	def start_clicked(self, widget, data=None):
+		self.fstop = False
+		self.stop.set_sensitive(True)
 		widget.set_sensitive(False)
 		th = Thread(target=self.play)
 		th.start()
+
+	def stop_clicked(self, widget, data=None):
+		self.fstop = True
+		widget.set_sensitive(False)
 
 	def __init__(self):
 		self.nodes = None
 		self.t     = 0.0
 		self.pos   = None
+		self.fstop = False
 
 		self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
 		self.window.connect('destroy', self.window_destroy)
@@ -82,6 +91,11 @@ class NAMM:
 		self.start = gtk.Button(None, gtk.STOCK_MEDIA_PLAY)
 		self.start.connect('clicked', self.start_clicked)
 		self.hbox.add(self.start)
+
+		self.stop = gtk.Button(None, gtk.STOCK_MEDIA_STOP)
+		self.stop.connect('clicked', self.stop_clicked)
+		self.stop.set_sensitive(False)
+		self.hbox.add(self.stop)
 
 		self.adjustment = gtk.Adjustment(0.1, 0.01, 1.0, 0.01, 0.1)
 		self.spinbutton = gtk.SpinButton(self.adjustment, 0.01, 2)
