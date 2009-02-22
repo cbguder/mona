@@ -12,7 +12,7 @@ def main(file):
 	f.close()
 
 	namm = NAMM()
-	namm.nodes = parser.nodes
+	namm.set_nodes(parser.get_nodes())
 	namm.main()
 
 if __name__ == '__main__':

@@ -4,20 +4,38 @@ from Point import Point
 
 class Node:
 	def __init__(self):
-#		self.id       = 0
-		self.src      = Point()
-		self.dest     = Point()
-		self.src_time = 0.0
-		self.speed    = 0.0
-		self.distance = 0.0
+		self.movements = []
 
 	def read_line(self, line):
-		l = line.split()
+		m = NodeMovement()
+		m.load_trace(line)
+		self.movements.append(m)
+
+	def position_at(self, time):
+		movement = None
+		for m in self.movements:
+			if m.src_time > time:
+				break
+			movement = m
+		return movement.position_at(time)
+
+class NodeMovement:
+	def __init__(self):
+		self.src        = Point()
+		self.dest       = Point()
+		self.src_time   = 0.0
+		self.speed      = 0.0
+		self.distance   = 0.0
+		self.total_time = 0.0
+		self.dx         = 0.0
+		self.dy         = 0.0
+
+	def load_trace(self, trace):
+		l = trace.split()
 		self.src_time   = float(l[1])
-#		self.id         = int(l[2])
 		self.src.x      = float(l[3][1:-1])
 		self.src.y      = float(l[4][:-1])
-#		self.src.z      = float(l[5][:-2])
+		self.src.z      = float(l[5][:-2])
 		self.dest.x     = float(l[6][1:-1])
 		self.dest.y     = float(l[7][:-2])
 		self.speed      = float(l[8])
@@ -41,14 +59,9 @@ class Node:
 
 if __name__ == '__main__':
 	n = Node()
-	n.read_line('M 0.00000 0 (1474.03, 609.20, 0.00), (1514.98, 612.62), 13.69')
-	print 'DISTANCE:', n.distance
-	print 'TIME:    ', n.total_time
-	print
-	print 'SOURCE:  ', n.src
-	print 'DEST.:   ', n.dest
-	print
+	n.read_line('M 0.00000 0 (0.0, 0.0, 0.0), (100.0, 0.0), 20.0')
+	n.read_line('M 5.00000 0 (100.0, 0.0, 0.0), (0.0, 0.0), 20.0')
 	t = 0.0
-	while t < n.total_time:
+	while t < 10:
 		print 'AT %.1fs: %s' % (t, n.position_at(t))
 		t += 1.0
