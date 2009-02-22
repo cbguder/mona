@@ -40,7 +40,6 @@ class NAMM:
 
 	def step(self):
 		self.t += self.adjustment.value
-#		self.pos = [n.position_at(self.t) for n in self.nodes]
 		self.draw()
 
 	def rewind_clicked(self, widget, data=None):
