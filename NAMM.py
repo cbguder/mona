@@ -73,9 +73,10 @@ class NAMM:
 		self.pos   = None
 		self.fstop = False
 
-		self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+		self.window = gtk.Window()
 		self.window.connect('destroy', self.window_destroy)
 		self.window.set_border_width(2)
+		self.window.set_title('NAMM')
 
 		self.vbox = gtk.VBox(False, 10)
 		self.window.add(self.vbox)
