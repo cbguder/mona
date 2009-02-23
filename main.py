@@ -7,7 +7,11 @@ from TraceParser import TraceParser
 def main(file):
 	parser = TraceParser()
 
-	f = open(file)
+	try:
+		f = open(file)
+	except IOError, e:
+		print "mona: cannot open %s: %s" % (file, e.args[1])
+		sys.exit()
 	parser.parse(f)
 	f.close()
 
@@ -16,4 +20,7 @@ def main(file):
 	mona.main()
 
 if __name__ == '__main__':
+	if len(sys.argv) < 2:
+		print "Usage: mona TRACEFILE"
+		sys.exit()
 	main(sys.argv[1])
