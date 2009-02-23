@@ -11,7 +11,7 @@ NODE_SIZE = 4
 import time
 from threading import Thread
 
-class NAMM:
+class MONA:
 	def window_delete(self, widget, event, data=None):
 		return False
 
@@ -76,7 +76,7 @@ class NAMM:
 		self.window = gtk.Window()
 		self.window.connect('destroy', self.window_destroy)
 		self.window.set_border_width(2)
-		self.window.set_title('NAMM')
+		self.window.set_title('MONA')
 
 		self.vbox = gtk.VBox(False, 10)
 		self.window.add(self.vbox)
