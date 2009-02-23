@@ -6,7 +6,7 @@ import gtk
 
 gtk.gdk.threads_init()
 
-NODE_SIZE = 4.0
+NODE_SIZE = 4
 
 import time
 from threading import Thread
@@ -31,8 +31,8 @@ class NAMM:
 		pixmap.draw_rectangle(style.bg_gc[gtk.STATE_NORMAL], True, 0, 0, rect.width, rect.height)
 		for p in self.pos:
 			pixmap.draw_arc(style.fg_gc[gtk.STATE_NORMAL], True,
-			                rect.width  * (p.x / 2400.0) - NODE_SIZE/2,
-			                rect.height * (p.y / 2400.0) - NODE_SIZE/2,
+			                int(rect.width  * (p.x / 2400.0) - NODE_SIZE/2),
+			                int(rect.height * (p.y / 2400.0) - NODE_SIZE/2),
 			                NODE_SIZE, NODE_SIZE,
 			                0, 64 * 360)
 
