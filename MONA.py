@@ -8,8 +8,11 @@ gtk.gdk.threads_init()
 
 NODE_SIZE = 4
 
+import sys
 import time
 from threading import Thread
+from ProgressDialog import ProgressDialog
+from TraceParser import TraceParser
 
 class MONA:
 	def window_delete(self, widget, event, data=None):
@@ -67,11 +70,41 @@ class MONA:
 		self.fstop = True
 		widget.set_sensitive(False)
 
-	def __init__(self):
+	def parse_file(self):
+		try:
+			f = open(self.file)
+		except IOError, e:
+			gtk.gdk.threads_enter()
+			d = gtk.MessageDialog(self.window, gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, "Cannot open %s: %s" % (self.file, e.args[1]))
+			d.run()
+			d.destroy()
+			gtk.gdk.threads_leave()
+			return
+
+		gtk.gdk.threads_enter()
+		dialog = ProgressDialog('Parsing trace file...', self.window)
+		gtk.gdk.threads_leave()
+
+		parser = TraceParser()
+		t = Thread(target=parser.parse, args=(f,))
+		t.start()
+
+		while t.isAlive():
+			gtk.gdk.threads_enter()
+			dialog.set_fraction(parser.progress)
+			gtk.gdk.threads_leave()
+			time.sleep(0.01)
+
+		dialog.destroy()
+		f.close()
+		self.set_nodes(parser.get_nodes())
+
+	def __init__(self, file):
 		self.nodes = None
 		self.t     = 0.0
 		self.pos   = None
 		self.fstop = False
+		self.file  = file
 
 		self.window = gtk.Window()
 		self.window.connect('destroy', self.window_destroy)
@@ -86,10 +119,12 @@ class MONA:
 
 		self.rewind = gtk.Button(None, gtk.STOCK_MEDIA_REWIND)
 		self.rewind.connect('clicked', self.rewind_clicked)
+		self.rewind.set_sensitive(False)
 		self.hbox.add(self.rewind)
 
 		self.start = gtk.Button(None, gtk.STOCK_MEDIA_PLAY)
 		self.start.connect('clicked', self.start_clicked)
+		self.start.set_sensitive(False)
 		self.hbox.add(self.start)
 
 		self.stop = gtk.Button(None, gtk.STOCK_MEDIA_STOP)
@@ -110,9 +145,14 @@ class MONA:
 
 		self.window.show_all()
 
+		t = Thread(target=self.parse_file)
+		t.start()
+
 	def set_nodes(self, nodes):
 		self.nodes = nodes
 		self.draw()
+		self.start.set_sensitive(True)
+		self.rewind.set_sensitive(True)
 
 	def main(self):
 		gtk.gdk.threads_enter()
