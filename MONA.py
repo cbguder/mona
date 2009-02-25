@@ -22,18 +22,28 @@ class MONA:
 		gtk.main_quit()
 
 	def draw(self):
-		self.statusbar.push(0, '%.2f' % self.t)
+		self.statusbar.push(0, '%.3f' % self.t)
 		self.statusbar.queue_draw()
 
 		rect = self.image.get_allocation()
 		style = self.image.get_style()
 
-		self.pos = [n.position_at(self.t) for n in self.nodes]
+		self.pos      = [n.position_at(self.t) for n in self.nodes]
+		self.activity = [n.active_at(self.t) for n in self.nodes]
 
 		pixmap = gtk.gdk.Pixmap(None, rect.width, rect.height, 24)
 		pixmap.draw_rectangle(style.bg_gc[gtk.STATE_NORMAL], True, 0, 0, rect.width, rect.height)
-		for p in self.pos:
-			pixmap.draw_arc(style.fg_gc[gtk.STATE_NORMAL], True,
+
+		red = self.image.get_parent_window().new_gc()
+		red.foreground = self.image.get_colormap().alloc_color("#FF0000")
+
+		for i, p in enumerate(self.pos):
+			if self.activity[i]:
+				gc = red
+			else:
+				gc = style.fg_gc[gtk.STATE_ACTIVE]
+
+			pixmap.draw_arc(gc, True,
 			                int(rect.width  * (p.x / 2400.0) - NODE_SIZE/2),
 			                int(rect.height * (p.y / 2400.0) - NODE_SIZE/2),
 			                NODE_SIZE, NODE_SIZE,
@@ -41,9 +51,18 @@ class MONA:
 
 		self.image.set_from_pixmap(pixmap, None)
 
-	def step(self):
-		self.t += self.adjustment.value
+	def do_step(self, forward=True):
+		if forward:
+			self.t += self.adjustment.value
+		else:
+			self.t -= self.adjustment.value
 		self.draw()
+
+	def previous_clicked(self, widget, data=None):
+		self.do_step(False)
+
+	def next_clicked(self, widget, data=None):
+		self.do_step()
 
 	def rewind_clicked(self, widget, data=None):
 		self.fstop = True
@@ -53,14 +72,18 @@ class MONA:
 	def play(self):
 		while self.t < 100 and not self.fstop:
 			gtk.gdk.threads_enter()
-			self.step()
+			self.do_step()
 			gtk.gdk.threads_leave()
 			time.sleep(0.005)
 		self.start.set_sensitive(True)
+		self.previous.set_sensitive(True)
+		self.next.set_sensitive(True)
 		self.stop.set_sensitive(False)
 
 	def start_clicked(self, widget, data=None):
 		self.fstop = False
+		self.previous.set_sensitive(False)
+		self.next.set_sensitive(False)
 		self.stop.set_sensitive(True)
 		widget.set_sensitive(False)
 		th = Thread(target=self.play)
@@ -68,7 +91,6 @@ class MONA:
 
 	def stop_clicked(self, widget, data=None):
 		self.fstop = True
-		widget.set_sensitive(False)
 
 	def parse_file(self):
 		try:
@@ -122,18 +144,28 @@ class MONA:
 		self.rewind.set_sensitive(False)
 		self.hbox.add(self.rewind)
 
+		self.previous = gtk.Button(None, gtk.STOCK_MEDIA_PREVIOUS)
+		self.previous.connect('clicked', self.previous_clicked)
+		self.previous.set_sensitive(False)
+		self.hbox.add(self.previous)
+
 		self.start = gtk.Button(None, gtk.STOCK_MEDIA_PLAY)
 		self.start.connect('clicked', self.start_clicked)
 		self.start.set_sensitive(False)
 		self.hbox.add(self.start)
+
+		self.next = gtk.Button(None, gtk.STOCK_MEDIA_NEXT)
+		self.next.connect('clicked', self.next_clicked)
+		self.next.set_sensitive(False)
+		self.hbox.add(self.next)
 
 		self.stop = gtk.Button(None, gtk.STOCK_MEDIA_STOP)
 		self.stop.connect('clicked', self.stop_clicked)
 		self.stop.set_sensitive(False)
 		self.hbox.add(self.stop)
 
-		self.adjustment = gtk.Adjustment(0.1, 0.01, 1.0, 0.01, 0.1)
-		self.spinbutton = gtk.SpinButton(self.adjustment, 0.01, 2)
+		self.adjustment = gtk.Adjustment(0.1, 0.001, 1.0, 0.001, 0.1)
+		self.spinbutton = gtk.SpinButton(self.adjustment, 0.01, 3)
 		self.hbox.add(self.spinbutton)
 
 		self.image = gtk.Image()
@@ -152,6 +184,8 @@ class MONA:
 		self.nodes = nodes
 		self.draw()
 		self.start.set_sensitive(True)
+		self.previous.set_sensitive(True)
+		self.next.set_sensitive(True)
 		self.rewind.set_sensitive(True)
 
 	def main(self):

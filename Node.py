@@ -5,6 +5,9 @@ from Point import Point
 class Node:
 	def __init__(self):
 		self.movements = []
+		self.packets   = []
+		self.active    = False
+		self.first_activity = None
 
 	def read_line(self, line):
 		m = NodeMovement()
@@ -18,6 +21,19 @@ class Node:
 				break
 			movement = m
 		return movement.position_at(time)
+
+	def active_at(self, time):
+		return self.first_activity != None and time >= self.first_activity
+
+	def receive_packet(self, packet):
+#		self.packets.append(packet)
+		if self.first_activity == None and packet.type == 'VirtualSign':
+			self.first_activity = packet.time
+
+	def send_packet(self, packet):
+#		self.packets.append(packet)
+		if self.first_activity == None and packet.type == 'VirtualSign':
+			self.first_activity = packet.time
 
 class NodeMovement:
 	def __init__(self):
