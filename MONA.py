@@ -44,8 +44,8 @@ class MONA:
 				gc = style.fg_gc[gtk.STATE_ACTIVE]
 
 			pixmap.draw_arc(gc, True,
-			                int(rect.width  * (p.x / 2400.0) - NODE_SIZE/2),
-			                int(rect.height * (p.y / 2400.0) - NODE_SIZE/2),
+			                int(rect.width  * (p.x / 1000.0) - NODE_SIZE/2),
+			                int(rect.height * (p.y / 1000.0) - NODE_SIZE/2),
 			                NODE_SIZE, NODE_SIZE,
 			                0, 64 * 360)
 
@@ -70,7 +70,7 @@ class MONA:
 		self.draw()
 
 	def play(self):
-		while self.t < 100 and not self.fstop:
+		while self.t < 60 and not self.fstop:
 			gtk.gdk.threads_enter()
 			self.do_step()
 			gtk.gdk.threads_leave()
