@@ -20,7 +20,11 @@ class Node:
 			if m.src_time > time:
 				break
 			movement = m
-		return movement.position_at(time)
+
+		if movement == None:
+			return None
+		else:
+			return movement.position_at(time)
 
 	def active_at(self, time):
 		return self.first_activity != None and time >= self.first_activity
@@ -64,7 +68,7 @@ class NodeMovement:
 	def position_at(self, time):
 		dt = time - self.src_time
 
-		if dt > 0.0:
+		if dt > 0.0 and self.total_time > 0.0:
 			ratio = dt / self.total_time 
 			p = Point()
 			p.x = self.src.x + self.dx * ratio

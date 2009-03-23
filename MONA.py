@@ -6,7 +6,8 @@ import gtk
 
 gtk.gdk.threads_init()
 
-NODE_SIZE = 4
+NODE_SIZE = 4.0
+DIMENSION = 3000.0
 
 import sys
 import time
@@ -38,16 +39,17 @@ class MONA:
 		red.foreground = self.image.get_colormap().alloc_color("#FF0000")
 
 		for i, p in enumerate(self.pos):
-			if self.activity[i]:
-				gc = red
-			else:
-				gc = style.fg_gc[gtk.STATE_ACTIVE]
+			if p != None:
+				if self.activity[i]:
+					gc = red
+				else:
+					gc = style.fg_gc[gtk.STATE_ACTIVE]
 
-			pixmap.draw_arc(gc, True,
-			                int(rect.width  * (p.x / 1000.0) - NODE_SIZE/2),
-			                int(rect.height * (p.y / 1000.0) - NODE_SIZE/2),
-			                NODE_SIZE, NODE_SIZE,
-			                0, 64 * 360)
+				pixmap.draw_arc(gc, True,
+								int(rect.width  * (p.x / DIMENSION) - NODE_SIZE/2),
+								int(rect.height * (p.y / DIMENSION) - NODE_SIZE/2),
+								NODE_SIZE, NODE_SIZE,
+								0, 64 * 360)
 
 		self.image.set_from_pixmap(pixmap, None)
 
